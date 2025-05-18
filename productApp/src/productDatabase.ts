@@ -37,14 +37,13 @@ export class productDatabase {
 
     //method to add a product
     async addProduct(name: string, category: string, price: number): Promise<void> {
-        const product: Product = { name, category, price };
         return new Promise((resolve, reject) => {
-            const transaction = this.database!.transaction(this.storeName, 'readwrite');
-            const store = transaction.objectStore(this.storeName);
-            const request = store.add(product);
-
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
+            if (!this.database) return reject('DB not initialized');
+            const tx = this.database.transaction(this.storeName, 'readwrite');
+            const store = tx.objectStore(this.storeName);
+            store.add({ name, category, price });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
         });
     }
 
